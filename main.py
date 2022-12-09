@@ -3,12 +3,15 @@ import db_setup as db
 from flask_sqlalchemy import SQLAlchemy
 import row_data
 
-db = SQLAlchemy()
+
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db_test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -238,8 +241,9 @@ def users():
 
 
 def init_data():
-    db.drop_all()
-    db.create_all()
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
 
     for user in row_data.users:
         new_user = User(
@@ -267,6 +271,7 @@ def init_data():
             customer_id=order['customer_id'],
             executor_id=order['executor_id'],
         )
+
 
         db.session.add(new_order)
         db.session.commit()
